@@ -2,6 +2,79 @@
 
 Serveur MCP (Model Context Protocol) pour gérer des articles de blog avec recherche et création.
 
+## 📖 Conception du serveur MCP
+
+Ce projet est un exemple d'implémentation d'un serveur MCP utilisant le **SDK Java** (sans framework Spring ou autre).
+
+### Architecture MCP
+
+Le Model Context Protocol (MCP) définit une **architecture en couches** avec une séparation claire des responsabilités :
+
+#### 1. **Couche Client/Server**
+- `McpServer` : Gère les opérations du protocole
+- `McpSession` : Gère les interactions synchrones et asynchrones
+- Support des modèles de programmation **synchrone** (`McpSyncServer`) et **asynchrone** (`McpAsyncServer`)
+
+#### 2. **Couche Transport**
+- Abstraction de la sérialisation des messages JSON-RPC
+- **Transport Stdio** : Communication via stdin/stdout (utilisé dans ce projet)
+- Alternatives : HTTP SSE, Streamable-HTTP pour architectures distribuées
+
+#### 3. **Couche Protocole**
+Le SDK supporte les capacités MCP suivantes :
+- **Tools** : Découverte et exécution d'outils (utilisé ici)
+- **Resources** : Gestion de ressources avec URIs et subscriptions
+- **Prompts** : Templates de prompts pour interactions IA
+- **Completion** : Suggestions de complétion
+- **Logging** : Système de logs
+- **Progress** : Suivi de progression des opérations
+
+### Principes de conception
+
+Ce serveur illustre les **bonnes pratiques** du SDK Java MCP :
+
+1. **Modularité sans dépendances de framework**
+   - Utilisation du module `mcp-core` uniquement
+   - Pas de dépendance à Spring ou autre framework web
+   - Transport stdio inclus par défaut
+
+2. **Initialisation du serveur**
+   ```java
+   // 1. Créer le transport
+   StdioServerTransportProvider transport =
+       new StdioServerTransportProvider(McpJsonMapper.getDefault());
+
+   // 2. Créer le serveur avec capabilities
+   McpSyncServer server = McpServer.sync(transport)
+       .serverInfo("blog-mcp-server", "1.0.0")
+       .capabilities(ServerCapabilities.builder()
+           .tools(true)
+           .build())
+       .build();
+   ```
+
+3. **Enregistrement des outils**
+   - Définition des outils avec schéma JSON pour les paramètres
+   - Handlers pour la logique métier
+   - Gestion des erreurs avec `CallToolResult`
+
+4. **Négociation des capacités**
+   - Vérification de compatibilité de version du protocole
+   - Échange de fonctionnalités lors de l'initialisation
+   - Validation et gestion d'erreurs type-safe
+
+### Pourquoi le SDK Java ?
+
+- **Simplicité** : Pas de configuration complexe de framework
+- **Légèreté** : Dépendances minimales
+- **Portabilité** : JAR exécutable standalone
+- **Compréhension** : Code clair pour apprendre le protocole MCP
+- **Performance** : Communication directe via stdio pour processus locaux
+
+### Référence
+
+📚 Documentation officielle : [MCP Java SDK Overview](https://modelcontextprotocol.io/sdk/java/mcp-overview)
+
 ## 🚀 Build
 
 ```bash
